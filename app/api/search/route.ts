@@ -27,12 +27,15 @@ export async function POST(req: Request) {
       carparkMap[record.car_park_no] = coords;
     }
   });       
-
+ 
   console.log("Static dataset records count:", records.length);
   console.log("Static sample record:", records[0]);
   console.log("CarparkMap size:", Object.keys(carparkMap).length);
 
   const { destinationLat, destinationLng } = await req.json();
+
+  console.log("DESTINATION LAT:", destinationLat);
+  console.log("DESTINATION LNG:", destinationLng);
 
   // 🔹 Fetch HDB availability
   const hdbRes = await fetch(
@@ -72,6 +75,12 @@ export async function POST(req: Request) {
 
   // 🔹 Convert Private Carparks
   const enrichedPrivate = privateCarparks.map((cp) => {
+
+    if (cp.name.includes("Seletar")) {
+      console.log("MALL LAT:", cp.latitude);
+      console.log("MALL LNG:", cp.longitude);
+    }
+
     const distance = calculateDistance(
       destinationLat,
       destinationLng,

@@ -18,4 +18,6 @@ export function calculateDistance(
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   
     return R * c;
-  }export const HDB_RATE_PER_30MIN = 0.60;
+  }
+  
+  export const HDB_RATE_PER_30MIN = 0.60;
