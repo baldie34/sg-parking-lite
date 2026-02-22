@@ -1,36 +1,25 @@
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const place = searchParams.get('place')
-
-  if (!place) {
-    return Response.json({ error: 'No place provided' })
-  }
-
+export async function POST(req: Request) {
   try {
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${place}`,
-      {
-        headers: {
-          'User-Agent': 'sg-parking-lite-app'
-        }
-      }
-    )
+    const { query } = await req.json();
 
-    if (!res.ok) {
-      return Response.json({ error: 'Geocoding failed' })
-    }
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+        query + " Singapore"
+      )}`
+    );
 
-    const data = await res.json()
+    const data = await response.json();
 
-    if (!data.length) {
-      return Response.json({ error: 'Not found' })
+    if (!data || data.length === 0) {
+      return Response.json({ error: "Not found" }, { status: 404 });
     }
 
     return Response.json({
-      lat: data[0].lat,
-      lng: data[0].lon,
-    })
-  } catch (err) {
-    return Response.json({ error: 'Server error' })
+      lat: parseFloat(data[0].lat),
+      lng: parseFloat(data[0].lon),
+    });
+  } catch (error) {
+    console.error("Geocode error:", error);
+    return Response.json({ error: "Server error" }, { status: 500 });
   }
 }
