@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import MapView from "./components/MapView";
 
 export default function Home() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [destinationLat, setDestinationLat] = useState(0);
+  const [destinationLng, setDestinationLng] = useState(0);
 
   async function handleSearch() {
     setLoading(true);
@@ -24,6 +27,9 @@ export default function Home() {
       setLoading(false);
       return;
     }
+
+    setDestinationLat(geoData.lat);
+    setDestinationLng(geoData.lng);
 
     // Step 2: Search carparks
     const searchRes = await fetch("/api/search", {
@@ -60,6 +66,19 @@ export default function Home() {
       </div>
 
       {loading && <p>Loading...</p>}
+
+      {results.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-lg font-bold mb-3">Map View</h2>
+          {destinationLat > 0 && (
+            <MapView
+              carparks={results}
+              destinationLat={destinationLat}
+              destinationLng={destinationLng}
+            />
+          )}
+        </div>
+      )}
 
       <div className="space-y-4">
         {results.map((cp, index) => (

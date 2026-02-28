@@ -19,15 +19,18 @@ export async function POST(req: Request) {
 
   records.forEach((record: any) => {
     if (record.x_coord && record.y_coord) {
+      // the static dataset uses X = easting, Y = northing.  our converter
+      // expects (N, E), so the values must be flipped or points will end up
+      // completely wrong (10 000 + km away).
       const coords = svy21ToLatLng(
-        parseFloat(record.x_coord),
-        parseFloat(record.y_coord)
+        parseFloat(record.y_coord), // northing
+        parseFloat(record.x_coord)  // easting
       );
   
       carparkMap[record.car_park_no] = coords;
     }
   });       
- 
+
   console.log("Static dataset records count:", records.length);
   console.log("Static sample record:", records[0]);
   console.log("CarparkMap size:", Object.keys(carparkMap).length);
@@ -51,6 +54,11 @@ export async function POST(req: Request) {
     const coords = carparkMap[cp.carpark_number];
   
     if (!coords) return null;
+
+    // debug a few problem areas
+    if (cp.carpark_number.startsWith('SE')) {
+      console.log("HDB COORDS for", cp.carpark_number, coords);
+    }
   
     const distance = calculateDistance(
       destinationLat,
@@ -102,9 +110,9 @@ export async function POST(req: Request) {
 
   const sorted = sortCarparks(merged);
 
-  // 🔹 Filter within 500m
+  // 🔹 Filter within 2km (show nearby options without being too restrictive)
   const within500m = sorted.filter(
-    (cp) => cp.distance_m <= 10000000000000000000
+    (cp) => cp.distance_m <= 2000
   );
 
   console.log("Merged count:", merged.length);
